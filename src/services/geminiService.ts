@@ -23,7 +23,12 @@ async function generateIllustration(dishName: string): Promise<string> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash-image",
-      contents: [{ text: `Minimalist cute food icon: "${dishName}". Simple shapes, flat colors, white background. No text.` }],
+      contents: [{ 
+        text: `A simple, cute, minimalist cartoon illustration of the specific dish: "${dishName}". 
+               The illustration MUST clearly and accurately represent the key ingredients and typical appearance of "${dishName}". 
+               Style: Flat design, vibrant colors, white background, food served on a clean plate. 
+               Strictly NO TEXT, NO LETTERS, NO WORDS in the image.` 
+      }],
     });
 
     for (const part of response.candidates?.[0]?.content?.parts || []) {
@@ -34,7 +39,6 @@ async function generateIllustration(dishName: string): Promise<string> {
         try {
           localStorage.setItem(`dish_img_${dishName}`, base64);
         } catch (e) {
-          // If storage is full, clear old ones or just ignore
           console.warn("Failed to save image to LocalStorage", e);
         }
         return base64;
@@ -43,7 +47,8 @@ async function generateIllustration(dishName: string): Promise<string> {
   } catch (e) {
     console.error("Failed to generate illustration for", dishName, e);
   }
-  return `https://picsum.photos/seed/${encodeURIComponent(dishName)}/800/600`;
+  // Fallback to a more descriptive placeholder if AI fails
+  return `https://picsum.photos/seed/${encodeURIComponent(dishName + " food")}/800/600`;
 }
 
 export async function generateRecipes(inputs: UserInputs): Promise<Recipe[]> {
