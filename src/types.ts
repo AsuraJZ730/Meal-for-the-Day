@@ -6,6 +6,7 @@ export interface Recipe {
   steps: string[];
   reason: string;
   imageUrl: string;
+  emojis: string;
 }
 
 export interface UserInputs {

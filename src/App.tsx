@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Utensils, 
@@ -21,7 +21,7 @@ import {
   Bookmark
 } from "lucide-react";
 import { Recipe, UserInputs } from "./types";
-import { generateRecipes, getRecipeImage } from "./services/geminiService";
+import { generateRecipes } from "./services/geminiService";
 
 export default function App() {
   const [inputs, setInputs] = useState<UserInputs>({
@@ -252,13 +252,13 @@ export default function App() {
   );
 }
 
-function InputGroup({ label, icon, placeholder, value, onChange }: { 
+const InputGroup: React.FC<{ 
   label: string; 
   icon: React.ReactNode; 
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
-}) {
+}> = ({ label, icon, placeholder, value, onChange }) => {
   return (
     <div className="space-y-3">
       <label className="flex items-center gap-2 text-brand-ink/70 font-medium text-sm uppercase tracking-wider">
@@ -276,29 +276,12 @@ function InputGroup({ label, icon, placeholder, value, onChange }: {
   );
 }
 
-function RecipeCard({ recipe, isFav, onToggleFav, onClick }: { 
+const RecipeCard: React.FC<{ 
   recipe: Recipe; 
   isFav: boolean;
   onToggleFav: (e: React.MouseEvent) => void;
-  onClick: () => void 
-}) {
-  const [imageUrl, setImageUrl] = useState(recipe.imageUrl);
-  const [imgLoading, setImgLoading] = useState(!recipe.imageUrl);
-
-  useEffect(() => {
-    if (!recipe.imageUrl) {
-      setImgLoading(true);
-      getRecipeImage(recipe.name).then(url => {
-        setImageUrl(url);
-        recipe.imageUrl = url; // Cache in object
-        setImgLoading(false);
-      });
-    } else {
-      setImageUrl(recipe.imageUrl);
-      setImgLoading(false);
-    }
-  }, [recipe.name, recipe.imageUrl]);
-
+  onClick: () => void;
+}> = ({ recipe, isFav, onToggleFav, onClick }) => {
   return (
     <motion.div
       layoutId={`card-${recipe.name}`}
@@ -315,19 +298,10 @@ function RecipeCard({ recipe, isFav, onToggleFav, onClick }: {
         <Heart className={`w-5 h-5 ${isFav ? "fill-current" : ""}`} />
       </button>
 
-      <div className="aspect-[4/3] relative overflow-hidden bg-brand-cream/30">
-        {imgLoading || !imageUrl ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-brand-olive/20" />
-          </div>
-        ) : (
-          <img 
-            src={imageUrl || undefined} 
-            alt={recipe.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            referrerPolicy="no-referrer"
-          />
-        )}
+      <div className="aspect-[4/3] relative overflow-hidden bg-brand-cream/30 flex items-center justify-center">
+        <div className="text-[48px] text-center select-none">
+          {recipe.emojis || "🍽"}
+        </div>
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
           {recipe.cuisine}
         </div>
@@ -365,12 +339,12 @@ function RecipeCard({ recipe, isFav, onToggleFav, onClick }: {
   );
 }
 
-function RecipeModal({ recipe, isFav, onToggleFav, onClose }: { 
+const RecipeModal: React.FC<{ 
   recipe: Recipe; 
   isFav: boolean;
   onToggleFav: (e: React.MouseEvent) => void;
-  onClose: () => void 
-}) {
+  onClose: () => void;
+}> = ({ recipe, isFav, onToggleFav, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
       <motion.div
@@ -401,19 +375,10 @@ function RecipeModal({ recipe, isFav, onToggleFav, onClose }: {
           </button>
         </div>
 
-        <div className="md:w-1/2 h-64 md:h-auto relative bg-brand-cream/30">
-          {recipe.imageUrl ? (
-            <img 
-              src={recipe.imageUrl} 
-              alt={recipe.name}
-              className="w-full h-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-brand-olive/20" />
-            </div>
-          )}
+        <div className="md:w-1/2 h-64 md:h-auto relative bg-brand-cream/30 flex items-center justify-center">
+          <div className="text-[80px] text-center select-none">
+            {recipe.emojis || "🍽"}
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
           <div className="absolute bottom-6 left-6 text-white md:hidden">
             <h2 className="serif text-4xl font-bold">{recipe.name}</h2>
